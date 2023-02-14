@@ -16,61 +16,42 @@ jQuery(document).ready(function($){
         nickName = $('#team_nickname').val(),
         teamHistory = $('#team_history').val(),
         teamLeague = $('#team_league').val(),
-        teamLogo = $('#team_logo').val()
-        // uploadfile = evt.target.files;
+        security = $('#security').val(),
+        packagephoto_data = $('#packagephoto').prop('files')[0];
 
-        // debugger;
-
-        //queryParams = getUrlParams(window.location.search)
-  
-        var formData = {
-          'action': 'register_football_team_action',
-          'teamName': teamName,
-          'nickName': nickName,
-          'teamHistory': teamHistory,
-          'teamLeague': teamLeague,
-          'teamLogo' : teamLogo
-        }
-  
-        console.log('let see form data', formData)
-         
-      //$.post('/wp-admin/admin-ajax.php', formData, function(response){ //404 Not Found
-      $.post(siteData.ajaxurl, formData, function(response){
-              // console.log('register football team', response)
-             if (response.data.success == true) {
-                  //clearTeamInput();
-                  $('#new_football_team_form').hide()
-                  let tableRow = "<tr><td>" + "6" + "</td><td>" + teamName + "</td><td>" + nickName + "</td><td>" + teamHistory + "</td><td>" + teamLeague + "</td><td><button class='btn btn-info btn-edit ms-2 mt-2'>Edit</button><button class='btn btn-danger btn-delete ms-2 mt-2'>Delete</button></td></tr>"
-                  //$('.soccer-team-table').append(tableRow)
-                  soccerTableDiv.show()
-                  soccerTableDiv.append(tableRow)
-             } else {
-                 alert('failed to add the football team')
-             }
-      });
+        
+      console.log('file name', packagephoto_data)
        
-//       var formData = new FormData();
-//       formData.append('action', 'register_football_team_action')
-//       formData.append('teamName', teamName) 
-//       formData.append('nickName', nickName)
-//       formData.append('teamHistory', teamHistory)
-//       formData.append('teamLeague', teamLeague)
-//       formData.append('teamLogo' , uploadfile)
+      var formData = new FormData();
+      formData.append('action', 'register_football_team_action')
+      formData.append('teamName', teamName) 
+      formData.append('nickName', nickName)
+      formData.append('teamHistory', teamHistory)
+      formData.append('teamLeague', teamLeague)
+      formData.append('security', security )
+      formData.append('packagephoto_name', packagephoto_data);
 
 
-//       $.ajax({
-//           url: siteData.ajaxurl,
-//           type: 'POST',
-//           data: formData,
-//           cache: false,
-//           dataType: 'json',
-//           processData: false, // Don't process the files
-//           contentType: false, // Set content type to false as jQuery will tell the server its a query string request
-//           success: function(data, textStatus, jqXHR) {	
-//                console.log('upload response', data)
-//       }
-
-// });
+      $.ajax({
+            url:siteData.ajaxurl,
+            type:"POST",
+            processData: false, //// Don't process the files
+            contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+            data: formData,
+            success : function( response ){
+                  if (response.success == true) {
+                      $('#new_football_team_form').hide()
+                      let tableRow = "<tr><td>" + "6" + "</td><td>" + teamName + "</td><td>" + nickName + "</td><td>" + teamHistory + "</td><td>" + teamLeague + "</td><td><button class='btn btn-info btn-edit ms-2 mt-2'>Edit</button><button class='btn btn-danger btn-delete ms-2 mt-2'>Delete</button></td></tr>"
+                      soccerTableDiv.show()
+                      soccerTableDiv.append(tableRow)
+                  }else{
+                     alert('Failed to add the football team')
+                  }
+            },
+            error: function(response){
+              console.log('error', response)
+            }
+     });
 
 
   
@@ -100,7 +81,7 @@ jQuery(document).ready(function($){
           'description': description
         }
   
-        console.log('let see form data', formData)
+        // console.log('let see form data', formData)
 
         //$('.soccer-league-table').show()
   
@@ -125,9 +106,9 @@ jQuery(document).ready(function($){
     //search form..
     $('#search_team_form').submit(function(evt){
 
-      evt.preventDefault()
+        evt.preventDefault()
   
-      var searchInput = $('#keyword').val()
+        var searchInput = $('#keyword').val()
 
         //queryParams = getUrlParams(window.location.search)
   
@@ -139,7 +120,7 @@ jQuery(document).ready(function($){
         console.log('search form data', formData)
   
       //$.post('/wp-admin/admin-ajax.php', formData, function(response){ //404 Not Found
-      $.post(siteData.ajaxurl, formData, function(response){
+        $.post(siteData.ajaxurl, formData, function(response){
               console.log('reponse team league', response)
              if (response.success == true) {
                    $(".leaderboard__profiles").empty();

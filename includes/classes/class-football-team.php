@@ -42,6 +42,12 @@ class FootballTeamAPI {
     public function bg_save_football_team_in_db(){
         global $wpdb;
 
+        if (!function_exists('wp_handle_upload')) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+        }
+
+        //add_filter('upload_dir', [$this, 'anxp_upload_dir'] );	 //change  the upload directoy
+
         $teamName = $_POST['teamName'];
         $nickName = $_POST['nickName'];
         $teamHistory = $_POST['teamHistory'];
@@ -58,7 +64,6 @@ class FootballTeamAPI {
              wp_send_json_error($response);  
         }
 
-        // error_log(print_r($wpdb->prefix,true));
 
         $table_name = $wpdb->prefix . "football_teams";
         //$wpdb->insert() automatically sanitizes the input data thus no need 
@@ -67,13 +72,28 @@ class FootballTeamAPI {
         $nickName = sanitize_text_field($nickName);
         $teamHistory = sanitize_text_field($teamHistory);
         $teamLeague = sanitize_text_field($teamLeague);
+
+        //first start with uploading the company logo before saving it in the db.
+        // check security nonce which one we created in html form and sending with data.
+	    check_ajax_referer('uploadingFile', 'security');
+
+     //upload the files..
+     $uploadedfile = $_FILES['packagephoto_name'];
+     $packagephoto_name = $_FILES["packagephoto_name"]["name"];
+     $upload_overrides = array( 
+        'test_form' => false, /* this was in your existing override array */
+        'unique_filename_callback' => [$this, 'anxp_packagephoto_filename']
+    );
+
+    $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
+    $uploadPath = $this->anxp_packagephoto_filename('', $packagephoto_name, '');
                 
         $wpdb->insert( 
             $table_name, 
             array( 
                 'team_name' => $teamName, 
                 'team_nickname' => $nickName,
-                'team_logo' => 'helloLogo', 
+                'team_logo' => $uploadPath,  
                 'team_history' => $teamHistory,
                 'league_id' => $teamLeague
             ),
@@ -85,13 +105,25 @@ class FootballTeamAPI {
                 '%d'
             ) 
         );
+
+        //$finalFileName =  file_get_contents($_FILES["file"]["tmp_name"]);
   
         if($wpdb->insert_id){
-            $response = array(
+            //upload the company logo
+            if(wp_upload_bits($fileName, null, file_get_contents($_FILES["file"]["tmp_name"]))){
+                $response = array(
                     'success' =>true,
                     'message' => 'Added the football team successful'
-            );
-            wp_send_json_success($response);
+                );
+                wp_send_json_success($response);
+	        } else{
+		         //echo json_encode(['success'=> false, 'code'=>404, 'msg'=>'Some thing is wrong when uploading file! Try again.']);
+                 $response = array(
+                    'success' => false,
+                    'message' => 'Some thing is wrong when uploading file! Try again.'
+                 );
+                 wp_send_json_error($response);
+	        }
 
         }else{
 
@@ -99,11 +131,13 @@ class FootballTeamAPI {
 
             $response = array(
                 'success' => false,
-                //'message' => 'Failed to add the football team'
-                'message' => json_encode($errorMessage)
+                'message' => 'Failed to add the football team'
+                //'message' => json_encode($errorMessage)
             );
             wp_send_json_error($response);
         }
+
+        //remove_filter('upload_dir', [$this, 'anxp_upload_dir'] );
     }
 
      /**
@@ -206,6 +240,22 @@ class FootballTeamAPI {
         );
         wp_send_json_success($response);
 
+    }
+
+    /**
+     * Utility functions for uploading the files
+     */
+    public function anxp_upload_dir( $dirs ) { 
+        $user = wp_get_current_user(); 
+        $dirs['subdir'] = ''; 
+        $dirs['path'] = $dirs['basedir'].''; 
+        $dirs['url'] = $dirs['baseurl'].''; 
+        return $dirs; 
+    }
+
+    private function anxp_packagephoto_filename($dir, $filename, $ext){
+        $newfilename =  time() . '1_'. $filename;
+        return $newfilename;
     }
            
 

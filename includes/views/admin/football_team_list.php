@@ -14,7 +14,7 @@ function bg_display_football_team_list() {
         <!--- container for adding the football teams -->
     <div id="new_football_team_form">
     <h5>New Football Team</h5>
-    <form id="NewTeamForm" action=""  enctype="multipart/form-data">
+    <form id="NewTeamForm" method = "post" action=""  enctype="multipart/form-data">
         <div class = "row">
             <div class = "col-8">
                 <label>Team Name</label>
@@ -27,7 +27,7 @@ function bg_display_football_team_list() {
             <div class = "col-8">
                <div class="form-group">
                     <label for="team_league">Team League:</label>
-                    <select class="form-control" id="team_league" name = "team_league">
+                    <select class="form-control" id="team_league" name = "team_league" required>
                         <option value="">Select the football league</option>
                         <?php
                             global $wpdb;
@@ -44,12 +44,15 @@ function bg_display_football_team_list() {
             </div>
             <div class = "col-8">
                 <label>Team History</label>
-                <textarea id="team_history" name="team_history" cols="40" rows="4" class= "form-control"></textarea>
+                <textarea id="team_history" name="team_history" cols="40" rows="4" class= "form-control" required></textarea>
             </div>
             <div class = "col-8">
                 <label>Team Logo</label>
-                <input type="file" name="team_logo" accept="image/*" class = "form-control"><br>
+                <!-- <input type="file" name="file" id = "file" accept="image/*" class = "form-control" required><br> -->
+                <input id="packagephoto" name="packagephoto" class="form-control here" type="file">
             </div>
+	         <input  type="hidden" id = "security" name="security" value="<?php echo wp_create_nonce("uploadingFile"); ?>" >
+             <input name="action" value="register_football_team_action" type="hidden"/>
         </div>
           <button type="submit" class="btn btn-success save-btn">Add Team</button>
     </form>
